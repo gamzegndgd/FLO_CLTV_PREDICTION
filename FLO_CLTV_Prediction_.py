@@ -3,7 +3,7 @@
 ##############################################################
 
 ###############################################################
-# İş Problemi (Business Problem)
+# İş Problemi
 ###############################################################
 # FLO satış ve pazarlama faaliyetleri için roadmap belirlemek istemektedir.
 # Şirketin orta uzun vadeli plan yapabilmesi için var olan müşterilerin gelecekte şirkete sağlayacakları potansiyel değerin tahmin edilmesi gerekmektedir.
@@ -13,8 +13,8 @@
 # Veri Seti Hikayesi
 ###############################################################
 
-# Veri seti son alışverişlerini 2020 - 2021 yıllarında OmniChannel(hem online hem offline alışveriş yapan) olarak yapan müşterilerin geçmiş alışveriş davranışlarından
-# elde edilen bilgilerden oluşmaktadır.
+# Veri seti son alışverişlerini 2020 - 2021 yıllarında OmniChannel(hem online hem offline alışveriş yapan) olarak yapan müşterilerin geçmiş alışveriş 
+# davranışlarından elde edilen bilgilerden oluşmaktadır.
 
 # master_id: Eşsiz müşteri numarası
 # order_channel : Alışveriş yapılan platforma ait hangi kanalın kullanıldığı (Android, ios, Desktop, Mobile, Offline)
@@ -45,7 +45,7 @@ pd.set_option("display.max_columns", None)
 pd.set_option("display.width", 500)
 pd.set_option("display.float_format", lambda x: '%.4f' % x)
 
-# GÖREV 1: Veriyi Hazırlama
+######################## GÖREV 1: Veriyi Hazırlama #######################
            # 1. flo_data_20K.csv verisini okuyunuz.Dataframe’in kopyasını oluşturunuz.
            df_ = pd.read_csv("Week 3 - CRM Analytics/FLOMusteriSegmentasyonu/flo_data_20k.csv")
            df = df_.copy()
@@ -67,16 +67,15 @@ pd.set_option("display.float_format", lambda x: '%.4f' % x)
                 dataframe.loc[(dataframe[variable] < low_limit), variable] = low_limit
                 dataframe.loc[(dataframe[variable] > up_limit), variable] = up_limit
 
-           # 3. "order_num_total_ever_online","order_num_total_ever_offline","customer_value_total_ever_offline","customer_value_total_ever_online" değişkenlerinin
-           # aykırı değerleri varsa baskılayanız.
+           # 3. "order_num_total_ever_online","order_num_total_ever_offline","customer_value_total_ever_offline","customer_value_total_ever_online" 
+           # değişkenlerinin aykırı değerleri varsa baskılayınız.
             df.describe().T
             replace_with_thresholds(df, "order_num_total_ever_online")
             replace_with_thresholds(df, "order_num_total_ever_offline")
             replace_with_thresholds(df, "customer_value_total_ever_offline")
             replace_with_thresholds(df, "customer_value_total_ever_online")
 
-            # ya da
-
+            # ya da alternatif yöntem:
             replace_th_list = ["order_num_total_ever_online", "order_num_total_ever_offline",
                                "customer_value_total_ever_offline", "customer_value_total_ever_online"]
             for var in replace_th_list:
@@ -94,7 +93,7 @@ pd.set_option("display.float_format", lambda x: '%.4f' % x)
                if "date" in col:
                    df[col] = pd.to_datetime(df[col])
 
-# GÖREV 2: CLTV Veri Yapısının Oluşturulması
+####################### GÖREV 2: CLTV Veri Yapısının Oluşturulması #######################
            # 1.Veri setindeki en son alışverişin yapıldığı tarihten 2 gün sonrasını analiz tarihi olarak alınız.
            df["last_order_date"].max()
            today_date = dt.datetime(2021, 6, 1)
@@ -115,7 +114,7 @@ pd.set_option("display.float_format", lambda x: '%.4f' % x)
            cltv["monetary_cltv_avg"] = df["customer_value_total"] / df["order_number_total"]
 
 
-# GÖREV 3: BG/NBD, Gamma-Gamma Modellerinin Kurulması, CLTV'nin hesaplanması
+######################## GÖREV 3: BG/NBD, Gamma-Gamma Modellerinin Kurulması, CLTV'nin hesaplanması #######################
            # 1. BG/NBD modelini fit ediniz.
            bgf = BetaGeoFitter(penalizer_coef=0.001)
            bgf.fit(cltv["frequency"], cltv["recency_cltv_weekly"], cltv["T_weekly"])
@@ -146,14 +145,14 @@ pd.set_option("display.float_format", lambda x: '%.4f' % x)
                                                            cltv["T_weekly"],
                                                            cltv["monetary_cltv_avg"],
                                                            time=6,  # 6 aylık
-                                                           freq='W',  # T'nin frekans bilgisi yani haftalık
+                                                           freq='W',              # T'nin frekans bilgisi yani haftalık
                                                            discount_rate=0.01)
 
 
                 # b. Cltv değeri en yüksek 20 kişiyi gözlemleyiniz.
                 cltv.sort_values(by="cltv", ascending=False).head(20)
 
-# GÖREV 4: CLTV'ye Göre Segmentlerin Oluşturulması
+######################## GÖREV 4: CLTV'ye Göre Segmentlerin Oluşturulması ##############################################
            # 1. 6 aylık tüm müşterilerinizi 4 gruba (segmente) ayırınız ve grup isimlerini veri setine ekleyiniz. cltv_segment ismi ile dataframe'e ekleyiniz.
            cltv["cltv_segment"] = pd.qcut(x=cltv["cltv"], q=4, labels=["D", "C", "B", "A"])
 
@@ -161,7 +160,7 @@ pd.set_option("display.float_format", lambda x: '%.4f' % x)
            cltv.groupby("cltv_segment").agg({"cltv": "mean",
                                              "T_weekly": "mean"})
 
-# BONUS: Tüm süreci fonksiyonlaştırınız.
+######################### Tüm süreci fonksiyonlaştırınız.########################
 
 def outlier_thresholds(dataframe, variable):
     quartile1 = dataframe[variable].quantile(0.01)
